@@ -16,9 +16,9 @@ namespace ST7775 {
 
 	class Display : public Adafruit_GFX {
 		void setWindow(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2);
-		void writeWrReg(uint16_t data);
+		void writeWrReg(uint8_t command);
 		void writeWrData(uint16_t data);
-		void writeWr(uint16_t cmd, uint16_t data);
+		void writeWr(uint8_t command, uint16_t data);
 
 		uint8_t cs;
 		uint8_t wr;
@@ -41,11 +41,11 @@ namespace ST7775 {
 		volatile uint8_t* dataPort[8];
 
 	public:
-		Display(uint8_t cs, uint8_t wr, uint8_t rs);
-		void writeSpi(const uint8_t data);
-		void drawPixel(int16_t x, int16_t y, uint16_t color);
-		void setPins(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5, uint8_t b6, uint8_t b7);
-		void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+		Display(uint8_t, uint8_t, uint8_t);
+		void writeSpi(const uint8_t);
+		void drawPixel(int16_t, int16_t, uint16_t);
+		void setPins(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
+		void fillRect(int16_t, int16_t, int16_t, int16_t, uint16_t);
 
 		void begin();
 	};

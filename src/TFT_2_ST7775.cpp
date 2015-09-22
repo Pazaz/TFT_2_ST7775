@@ -1,7 +1,7 @@
 #include "TFT_2_ST7775.h"
 
 namespace ST7775 {
-	Display::Display(uint8_t cs, uint8_t wr, uint8_t rs) : Adafruit_GFX(176, 220) {
+	Display::Display(uint8_t cs, uint8_t wr, uint8_t rs) : Adafruit_GFX(WIDTH, HEIGHT) {
 		cs = cs;
 		wr = wr;
 		rs = rs;
@@ -24,14 +24,16 @@ namespace ST7775 {
 	}
 
 	void Display::writeSpi(const uint8_t data) {
-		uint8_t bit, i;
-		for (bit = 0x01, i = 0; bit; ++i, bit <<= 1) {
+		uint8_t bit = 1, i = 0;
+		do {
 			if (data & bit) {
 				*(dataPort[i]) |= dataPinMask[i];
 			} else {
 				*(dataPort[i]) &= (~dataPinMask[i]);
 			}
-		}
+			++i;
+			bit <<= 1;
+		} while (bit);
 	}
 
 	void Display::setPins(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5, uint8_t b6, uint8_t b7) {
@@ -43,20 +45,23 @@ namespace ST7775 {
 		data[5] = b5;
 		data[6] = b6;
 		data[7] = b7;
-		for (uint8_t i = 0; i < 8; ++i) {
+
+		uint8_t i = 0;
+		do {
 			pinMode(data[i], OUTPUT);
 			dataPort[i] = portOutputRegister(digitalPinToPort(data[i]));
 			dataPinMask[i] = digitalPinToBitMask(data[i]);
-		}
+			++i;
+		} while (i < 8);
 	}
 
-	void Display::writeWrReg(uint16_t data) {
+	void Display::writeWrReg(uint8_t command) {
 		*(rsPort) &= (~rsPinMask);
 		*(csPort) &= (~csPinMask);
-		writeSpi(data >> 8);
+		writeSpi(command >> 8);
 		*(wrPort) &= (~wrPinMask);
 		*(wrPort) |= wrPinMask;
-		writeSpi((data & 0x00ff));
+		writeSpi(command & 0xFF);
 		*(wrPort) &= (~wrPinMask);
 		*(wrPort) |= wrPinMask;
 		*(csPort) |= csPinMask;
@@ -68,14 +73,14 @@ namespace ST7775 {
 		writeSpi(data >> 8);
 		*(wrPort) &= (~wrPinMask);
 		*(wrPort) |= wrPinMask;
-		writeSpi((data & 0x00ff));
+		writeSpi(data & 0xFF);
 		*(wrPort) &= (~wrPinMask);
 		*(wrPort) |= wrPinMask;
 		*(csPort) |= csPinMask;
 	}
 
-	void Display::writeWr(uint16_t cmd, uint16_t data) {
-		writeWrReg(cmd);
+	void Display::writeWr(uint8_t command, uint16_t data) {
+		writeWrReg(command);
 		writeWrData(data);
 	}
 
@@ -93,56 +98,55 @@ namespace ST7775 {
 		writeWr(0x22, color);
 	}
 
-	void Display::fillRect(int16_t x, int16_t y, int16_t w, int16_t h,
-		uint16_t color) {
+	void Display::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
 		setWindow(x, y, x + w - 1, y + h - 1);
 		writeWrReg(0x22);
-		int i = w*h;
+		int i = w * h;
 		while (i--) {
 			writeWrData(color);
 		}
 	}
 
 	void Display::begin() {
-		writeWr(0x0001, 0x011C);
-		writeWr(0x0002, 0x0100);
-		writeWr(0x0003, 0x1030);
-		writeWr(0x0008, 0x0808);
-		writeWr(0x000C, 0x0000);
+		writeWr(0x01, 0x011C);
+		writeWr(0x02, 0x0100);
+		writeWr(0x03, 0x1030);
+		writeWr(0x08, 0x0808);
+		writeWr(0x0C, 0x0000);
 
-		writeWr(0x000F, 0x0e01);
-		writeWr(0x0010, 0x0A00);
-		writeWr(0x0011, 0x1038);
-		writeWr(0x00ff, 0x0003);
-		writeWr(0x00b0, 0x1411);
-		writeWr(0x00b1, 0x0202);
-		writeWr(0x00b2, 0x0313);
+		writeWr(0x0F, 0x0E01);
+		writeWr(0x10, 0x0A00);
+		writeWr(0x11, 0x1038);
+		writeWr(0xFF, 0x0003);
+		writeWr(0xB0, 0x1411);
+		writeWr(0xB1, 0x0202);
+		writeWr(0xB2, 0x0313);
 
-		writeWr(0x0030, 0x0000);
-		writeWr(0x0031, 0x00db);
-		writeWr(0x0032, 0x0000);
-		writeWr(0x0033, 0x0000);
-		writeWr(0x0034, 0x00db);
-		writeWr(0x0035, 0x0000);
-		writeWr(0x0036, 0x00AF);
-		writeWr(0x0037, 0x0000);
-		writeWr(0x0038, 0x00DB);
-		writeWr(0x0039, 0x0000);
+		writeWr(0x30, 0x0000);
+		writeWr(0x31, 0x00db);
+		writeWr(0x32, 0x0000);
+		writeWr(0x33, 0x0000);
+		writeWr(0x34, 0x00db);
+		writeWr(0x35, 0x0000);
+		writeWr(0x36, 0x00AF);
+		writeWr(0x37, 0x0000);
+		writeWr(0x38, 0x00DB);
+		writeWr(0x39, 0x0000);
 
-		writeWr(0x00ff, 0x0003);
-		writeWr(0x0050, 0x0000);
-		writeWr(0x0051, 0x0300);
-		writeWr(0x0052, 0x0103);
-		writeWr(0x0053, 0x2011);
-		writeWr(0x0054, 0x0703);
-		writeWr(0x0055, 0x0000);
-		writeWr(0x0056, 0x0400);
-		writeWr(0x0057, 0x0107);
-		writeWr(0x0058, 0x2011);
-		writeWr(0x0059, 0x0703);
-		writeWr(0x0020, 0x0000);
-		writeWr(0x0021, 0x0000);
-		writeWr(0x0007, 0x1017);
+		writeWr(0xFF, 0x0003);
+		writeWr(0x50, 0x0000);
+		writeWr(0x51, 0x0300);
+		writeWr(0x52, 0x0103);
+		writeWr(0x53, 0x2011);
+		writeWr(0x54, 0x0703);
+		writeWr(0x55, 0x0000);
+		writeWr(0x56, 0x0400);
+		writeWr(0x57, 0x0107);
+		writeWr(0x58, 0x2011);
+		writeWr(0x59, 0x0703);
+		writeWr(0x20, 0x0000);
+		writeWr(0x21, 0x0000);
+		writeWr(0x07, 0x1017);
 	}
 
 	namespace Utility {
