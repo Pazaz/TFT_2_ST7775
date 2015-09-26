@@ -25,33 +25,29 @@ namespace ST7775 {
 		uint8_t rs;
 
 		volatile uint8_t *csPort;
-		volatile uint8_t *pmwPort;
 		volatile uint8_t *wrPort;
 		volatile uint8_t *rsPort;
-		volatile uint8_t *restPort;
 
 		uint8_t csPinMask;
-		uint8_t pmwPinMask;
 		uint8_t wrPinMask;
 		uint8_t rsPinMask;
-		uint8_t restPinMask;
 
 		volatile uint8_t data[8];
 		volatile uint8_t dataPinMask[8];
-		volatile uint8_t* dataPort[8];
+		volatile uint8_t *dataPort[8];
 
 	public:
-		Display(uint8_t, uint8_t, uint8_t);
-		void writeSpi(const uint8_t);
+		Display(uint8_t cs, uint8_t wr, uint8_t rs);
+		void writeSpi(const uint8_t data);
 		void drawPixel(int16_t, int16_t, uint16_t);
-		void setPins(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
-		void fillRect(int16_t, int16_t, int16_t, int16_t, uint16_t);
+		void setPins(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint8_t b5, uint8_t b6, uint8_t b7);
+		void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 
 		void begin();
 	};
 
 	namespace Utility {
-		uint16_t RGB_565(uint8_t, uint8_t, uint8_t);
+		uint16_t RGB_565(uint8_t red, uint8_t green, uint8_t blue);
 	}
 }
 
